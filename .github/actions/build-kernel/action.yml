@@ -1287,6 +1287,27 @@ runs:
         echo "✅ KSU hooks applied"
         echo "::endgroup::"
 
+    - name: Apply Custom User Patches
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "::group::Apply Custom User Patches"
+        
+        cd "$CONFIG_FOLDER"
+        
+        if [ -d "$KERNEL_PATCHES_FOLDER/user_patches/vendor" ]; then
+          echo "Found custom vendor patches. Applying..."
+          for p in "$KERNEL_PATCHES_FOLDER/user_patches/vendor/"*.patch; do
+            [ -e "$p" ] || continue
+            echo "Applying $(basename "$p")..."
+            patch -p0 --forward < "$p" || { echo "❌ Failed to apply $(basename "$p")"; exit 1; }
+          done
+          echo "✅ All custom vendor patches applied!"
+        else
+          echo "ℹ️ No custom vendor patches found. Skipping."
+        fi
+        echo "::endgroup::"
+
     - name: Apply Other Patches
       shell: bash
       run: |
