@@ -1297,10 +1297,15 @@ runs:
         
         if [ -d "$KERNEL_PATCHES_FOLDER/user_patches/vendor" ]; then
           echo "Found custom vendor patches. Applying..."
-          for p in "$KERNEL_PATCHES_FOLDER/user_patches/vendor/"*.patch; do
+          for p in "$KERNEL_PATCHES_FOLDER/user_patches/vendor/"*; do
             [ -e "$p" ] || continue
-            echo "Applying $(basename "$p")..."
-            patch -p0 --forward < "$p" || { echo "❌ Failed to apply $(basename "$p")"; exit 1; }
+            echo "Processing $(basename "$p")..."
+            
+            if [[ "$p" == *.patch ]]; then
+              patch -p0 --forward < "$p" || { echo "❌ Failed to apply $(basename "$p")"; exit 1; }
+            elif [[ "$p" == *.sh ]]; then
+              bash "$p" || { echo "❌ Failed to run $(basename "$p")"; exit 1; }
+            fi
           done
           echo "✅ All custom vendor patches applied!"
         else
